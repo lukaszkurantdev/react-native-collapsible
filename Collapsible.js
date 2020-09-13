@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Animated, Easing } from 'react-native';
+import { Animated, Easing, findNodeHandle } from 'react-native';
 import { ViewPropTypes } from './config';
 
 const ANIMATED_EASING_PREFIXES = ['easeInOut', 'easeOut', 'easeIn'];
@@ -65,10 +65,15 @@ export default class Collapsible extends Component {
   }
 
   contentHandle = null;
+  containerWrapper= null;
 
   _handleRef = ref => {
     this.contentHandle = ref;
   };
+
+  _handleContainerWrapper = ref => {
+    this.containerWrapper = ref;
+  }; 
 
   _measureContent(callback) {
     this.setState(
@@ -91,7 +96,7 @@ export default class Collapsible extends Component {
             } else {
               ref = this.contentHandle.getNode();
             }
-            ref.measure((x, y, width, height) => {
+            ref.measureLayout(findNodeHandle(this.containerWrapper), (x, y, width, height) => {
               this.setState(
                 {
                   measuring: false,
@@ -218,13 +223,18 @@ export default class Collapsible extends Component {
     }
     return (
       <Animated.View
+        ref={this._handleContainerWrapper}
         style={style}
         pointerEvents={!enablePointerEvents && collapsed ? 'none' : 'auto'}
+        collapsable={false}
+        renderToHardwareTextureAndroid={true}
       >
         <Animated.View
           ref={this._handleRef}
           style={[this.props.style, contentStyle]}
           onLayout={this.state.animating ? undefined : this._handleLayoutChange}
+          collapsable={false}
+          renderToHardwareTextureAndroid={true}
         >
           {this.props.children}
         </Animated.View>
